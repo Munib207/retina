@@ -1,129 +1,168 @@
 import streamlit as st
-from PIL import Image
-import os
 
 # ===== PAGE SETUP =====
 st.set_page_config(
-    page_title="Retina App - Educational Curriculum",
+    page_title="Retina Curriculum App",
     page_icon="👁️",
     layout="wide"
 )
 
-# ===== Initialize session state (safe defaults) =====
-if "quiz_score" not in st.session_state:
-    st.session_state.quiz_score = 0
+# ===== DATA EMBEDDED (Curriculum + Case Bank) =====
+CURRICULUM = {
+    "modules": [
+        {
+            "id": "foundations",
+            "title": "Foundations & Anatomy",
+            "objectives": [
+                "Understand retinal layers and blood supply",
+                "Perform indirect ophthalmoscopy and slit lamp fundus exam",
+                "Interpret basic OCT features"
+            ],
+            "topics": [
+                {
+                    "id": "retina_anatomy",
+                    "title": "Retina Anatomy & Histology",
+                    "content": "The retina has 10 layers, with the macula and fovea specialized for central vision. The optic disc is the exit point of the optic nerve.",
+                    "image": None
+                },
+                {
+                    "id": "imaging_basics",
+                    "title": "Imaging Basics (OCT, Fundus)",
+                    "content": "OCT provides cross-sectional imaging. Fundus photos give a color overview of retinal health.",
+                    "image": None
+                }
+            ]
+        },
+        {
+            "id": "medical_retina",
+            "title": "Medical Retina Diseases",
+            "objectives": [
+                "Differentiate NPDR vs PDR in diabetic retinopathy",
+                "Recognize dry vs wet AMD",
+                "Interpret OCT changes of macular edema"
+            ],
+            "topics": [
+                {
+                    "id": "diabetic_retinopathy",
+                    "title": "Diabetic Retinopathy",
+                    "content": "Microaneurysms, hemorrhages, and exudates are hallmarks. May progress to proliferative DR with neovascularization.",
+                    "image": None
+                },
+                {
+                    "id": "amd",
+                    "title": "Age-Related Macular Degeneration (AMD)",
+                    "content": "Dry AMD has drusen. Wet AMD has choroidal neovascularization and subretinal fluid.",
+                    "image": None
+                },
+                {
+                    "id": "vascular_occlusions",
+                    "title": "Retinal Vascular Occlusions",
+                    "content": "Includes CRVO and BRVO; often cause sudden painless vision loss.",
+                    "image": None
+                }
+            ]
+        },
+        {
+            "id": "surgical_retina",
+            "title": "Surgical & Procedural Retina",
+            "objectives": [
+                "Understand indications for retinal detachment repair",
+                "Know steps of vitrectomy and PRP",
+                "Perform intravitreal injections safely"
+            ],
+            "topics": [
+                {
+                    "id": "retinal_detachment",
+                    "title": "Retinal Detachment",
+                    "content": "Rhegmatogenous, tractional, and exudative types. Symptoms: flashes, floaters, curtain vision.",
+                    "image": None
+                },
+                {
+                    "id": "laser_and_injections",
+                    "title": "Laser & Injections",
+                    "content": "PRP and intravitreal anti-VEGF are common treatments.",
+                    "image": None
+                }
+            ]
+        }
+    ]
+}
 
-# ===== Helper to load images safely =====
-def _load_image(fname):
-    if os.path.exists(fname):
-        try:
-            return Image.open(fname)
-        except Exception:
-            return None
-    return None
+CASES = [
+    {
+        "id": "case1",
+        "title": "Sudden Curtain Vision Loss",
+        "history": "55-year-old male with sudden floaters and curtain vision.",
+        "questions": [
+            {
+                "q": "Most likely diagnosis?",
+                "options": ["Retinal Detachment", "Macular Hole", "CRVO"],
+                "correct": "Retinal Detachment",
+                "explanation": "Curtain vision with floaters is classic for detachment."
+            },
+            {
+                "q": "Best diagnostic test?",
+                "options": ["OCT", "B-scan Ultrasound", "FA"],
+                "correct": "B-scan Ultrasound",
+                "explanation": "B-scan helps confirm detachment if fundus view is poor."
+            }
+        ]
+    },
+    {
+        "id": "case2",
+        "title": "Blurred Central Vision in Diabetes",
+        "history": "60-year-old diabetic with central blur. OCT shows cystic spaces.",
+        "questions": [
+            {
+                "q": "Most likely condition?",
+                "options": ["Macular Edema", "CRVO", "AMD"],
+                "correct": "Macular Edema",
+                "explanation": "Cystic spaces in diabetes = DME."
+            },
+            {
+                "q": "Best treatment?",
+                "options": ["Laser PRP", "Anti-VEGF injection", "Vitrectomy"],
+                "correct": "Anti-VEGF injection",
+                "explanation": "Anti-VEGF is first-line for DME."
+            }
+        ]
+    }
+]
 
-# ===== App UI =====
-st.title("👁️ Retina Interactive Curriculum")
+# ===== APP LAYOUT =====
+st.title("👁️ Retina Educational App")
 
 st.sidebar.title("Navigation")
-section = st.sidebar.radio("Go to:", [
-    "Introduction", "Anatomy", "Diseases", "Cases", "Quiz"
-])
+section = st.sidebar.radio("Choose section:", ["Curriculum", "Cases"])
 
-if section == "Introduction":
-    st.header("Introduction to Retina")
-    st.write(
-        """
-        The **retina** is the light-sensitive layer of tissue at the back of the eye.  
-        It converts light into electrical signals, which are sent to the brain via the optic nerve.  
-        Understanding the retina is crucial for diagnosing and managing many eye diseases.
-        """
-    )
+# ---- CURRICULUM SECTION ----
+if section == "Curriculum":
+    st.header("📚 Retina Curriculum")
+    for module in CURRICULUM["modules"]:
+        with st.expander(f"🔹 {module['title']}"):
+            st.subheader("Objectives")
+            for obj in module["objectives"]:
+                st.write(f"- {obj}")
+            st.subheader("Topics")
+            for topic in module["topics"]:
+                st.markdown(f"**{topic['title']}**")
+                st.write(topic["content"])
+                st.markdown("---")
 
-elif section == "Anatomy":
-    st.header("Retinal Anatomy")
-    st.write(
-        """
-        - **Macula**: Central vision, responsible for detail and color.  
-        - **Fovea**: Center of the macula, highest visual acuity.  
-        - **Optic Disc**: Blind spot where the optic nerve exits.  
-        - **Retinal Blood Supply**: Central retinal artery + choroidal circulation.  
-        """
-    )
-    img = _load_image("retina_anatomy.jpg")
-    if img:
-        st.image(img, caption="Diagram of the Retina", use_column_width=True)
-    else:
-        st.info("Image 'retina_anatomy.jpg' not found. Place an anatomy diagram in the app folder.")
-
-elif section == "Diseases":
-    st.header("Common Retinal Diseases")
-    disease = st.selectbox("Choose a disease:", [
-        "Diabetic Retinopathy", "Age-related Macular Degeneration (AMD)", "Retinal Detachment"
-    ])
-
-    if disease == "Diabetic Retinopathy":
-        img = _load_image("diabetic_retinopathy.jpg")
-        if img:
-            st.image(img, caption="Fundus Photo - Diabetic Retinopathy", use_column_width=True)
-        else:
-            st.info("Image 'diabetic_retinopathy.jpg' not found. Add a fundus photo in the app folder.")
-        st.write(
-            """
-            - Microaneurysms, dot-and-blot hemorrhages, hard exudates.  
-            - Can progress to proliferative stage with neovascularization.  
-            - Screening with fundus photography and OCT is essential.
-            """
-        )
-
-    elif disease == "Age-related Macular Degeneration (AMD)":
-        img = _load_image("amd_oct.jpg")
-        if img:
-            st.image(img, caption="OCT of Wet AMD", use_column_width=True)
-        else:
-            st.info("Image 'amd_oct.jpg' not found. Add an OCT image in the app folder.")
-        st.write(
-            """
-            - **Dry AMD**: Drusen deposits, gradual vision loss.  
-            - **Wet AMD**: Choroidal neovascularization causes rapid central vision loss.  
-            - OCT and fluorescein angiography help in diagnosis and monitoring.
-            """
-        )
-
-    elif disease == "Retinal Detachment":
-        st.write(
-            """
-            - Symptoms: Flashes, floaters, curtain-like shadow.  
-            - Rhegmatogenous detachment is most common.  
-            - Emergency: prompt surgical intervention often preserves vision.
-            """
-        )
-
+# ---- CASES SECTION ----
 elif section == "Cases":
-    st.header("Interactive Clinical Cases")
-    st.write("Case 1: A 55-year-old presents with sudden onset of floaters and a curtain-like loss of vision.")
-    case = st.radio(
-        "What is the most likely diagnosis?",
-        ["Retinal Detachment", "Macular Hole", "Central Retinal Vein Occlusion (CRVO)"]
-    )
-    if case == "Retinal Detachment":
-        st.success("✅ Correct! This is a classic presentation for rhegmatogenous retinal detachment.")
-    else:
-        st.error("❌ Not quite — consider the hallmark symptoms of detachment: flashes, floaters, and a curtain over vision.")
+    st.header("🩺 Clinical Cases")
+    for case in CASES:
+        with st.expander(f"Case: {case['title']}"):
+            st.write(f"**History:** {case['history']}")
+            for i, q in enumerate(case["questions"], 1):
+                ans = st.radio(f"Q{i}. {q['q']}", q["options"], key=f"{case['id']}_{i}")
+                if st.button(f"Check Q{i}", key=f"btn_{case['id']}_{i}"):
+                    if ans == q["correct"]:
+                        st.success(f"✅ Correct! {q['explanation']}")
+                    else:
+                        st.error(f"❌ Wrong. {q['explanation']}")
 
-elif section == "Quiz":
-    st.header("Quick Quiz")
-    q1 = st.radio("Which test is best for diagnosing Macular Edema?", [
-        "Visual Acuity Test", "OCT", "Intraocular Pressure Measurement"
-    ])
-    if st.button("Check answer"):
-        if q1 == "OCT":
-            st.success("✅ Correct! OCT is the gold standard for detecting and quantifying macular edema.")
-            st.session_state.quiz_score += 1
-        else:
-            st.error("❌ That's not correct. OCT is the most appropriate test for macular edema.")
-        st.write(f"Your quiz score: {st.session_state.quiz_score}")
-
-# ===== Footer =====
+# ===== FOOTER =====
 st.markdown("---")
-st.caption("Created as a lightweight educational retina app — drop three image files in the same folder: retina_anatomy.jpg, diabetic_retinopathy.jpg, amd_oct.jpg")
+st.caption("Lightweight Retina App — single-file deployment version.")
